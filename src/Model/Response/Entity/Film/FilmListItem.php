@@ -14,6 +14,10 @@ class FilmListItem
   public ?int $id;
   #[OA\Property(example: 'Star Wars')]
   public ?string $name;
+  
+  #[OA\Property(example: 'James Cameron')]
+  public ?string $directorName;
+
   public ?string $preview;
 
   public function getId(): int
@@ -43,6 +47,18 @@ class FilmListItem
   public function setPreview(string $preview): static
   {
     $this->preview = $preview;
+
+    return $this;
+  }
+
+  public function getDirectorName(): string
+  {
+    return $this->directorName;
+  }
+
+  public function setDirectorName(string $directorName): static
+  {
+    $this->directorName = $directorName;
 
     return $this;
   }

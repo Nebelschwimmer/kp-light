@@ -5,7 +5,6 @@ use App\Model\Response\Entity\Film\FilmDetail;
 use App\Model\Response\Entity\Film\FilmForm;
 use App\Model\Response\Entity\Film\FilmList;
 use App\Model\Response\Entity\Film\FilmListItem;
-use App\Enum\PersonType;
 class FilmMapper
 {
 
@@ -31,15 +30,14 @@ class FilmMapper
     return $model
       ->setId($film->getId())
       ->setName($film->getName())
-      ->setGenreId($film->getGenre()->getId())
+      ->setGenres($film->getGenres())
       ->setReleaseYear($film->getReleaseYear())
       ->setActorIds($this->transformActorsToIds($film))
-      ->setDirectorId($film->getDirector() ? $film->getDirector()->getId() : null)
-      ->setDirectorName($film->getDirector() ? $film->getDirector()->getFullname() : null)
-      ->setGenreName($film->getGenre()->getName())
+      ->setDirectorId($film->getDirectedBy() ? $film->getDirectedBy()->getId() : null)
+      ->setDirectorName($film->getDirectedBy() ? $film->getDirectedBy()->getFullname() : '')
       ->setActorNames($this->transformActorsToNames($film))
       ->setDescription($film->getDescription())
-      ->setRating($film->getRating())
+      ->setRating($film->getRating() ?? 0)
     ;
   }
 
@@ -48,10 +46,10 @@ class FilmMapper
     return $model
       ->setId($film->getId())
       ->setName($film->getName())
-      ->setGenreId($film->getGenre()->getId())
+      ->setGenres($film->getGenres())
       ->setReleaseYear($film->getReleaseYear())
       ->setActorIds($this->transformActorsToIds($film))
-      ->setDirectorId($film->getDirector() ? $film->getDirector()->getId() : null)
+      ->setDirectorId($film->getDirectedBy() ? $film->getDirectedBy()->getId() : null)
     ;
   }
 

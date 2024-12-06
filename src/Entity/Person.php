@@ -8,13 +8,11 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Enum\Gender;
-use App\Enum\PersonType;
 
 #[ORM\Entity(repositoryClass: PersonRepository::class)]
 class Person
 {
   public const DEFAULT_GENDER = Gender::MALE;
-  public const PATH_TO_UPLOADS_DIR = 'person';
 
   #[ORM\Id]
   #[ORM\GeneratedValue]
@@ -36,19 +34,34 @@ class Person
   #[ORM\Column(length: 255, nullable: true)]
   private ?string $photo = null;
 
-  #[ORM\Column(type: Types::SMALLINT, enumType: PersonType::class)]
-  private ?PersonType $type = null;
 
   /**
    * @var Collection<int, Film>
    */
   #[ORM\ManyToMany(targetEntity: Film::class, mappedBy: 'actors', cascade: ['persist'])]
-  private Collection $films;
+  private Collection $actedInFilms;
+
+
+  /**
+   * @var Collection<int, Specialty>
+   */
+  #[ORM\ManyToMany(targetEntity: Specialty::class, mappedBy: 'person')]
+  private Collection $specialties;
+
+  /**
+   * @var Collection<int, Film>
+   */
+  #[ORM\OneToMany(targetEntity: Film::class, mappedBy: 'directedBy')]
+  private Collection $directedFilms;
+
 
   public function __construct()
   {
-    $this->films = new ArrayCollection();
+    $this->actedInFilms = new ArrayCollection();
+    $this->specialties = new ArrayCollection();
+    $this->directedFilms = new ArrayCollection();
   }
+
 
   public function getId(): ?int
   {
@@ -119,47 +132,35 @@ class Person
     return $this;
   }
 
-  public function getType(): ?PersonType
-  {
-    return $this->type;
-  }
-
-  public function setType(PersonType|int $type): static
-  {
-    $this->type = is_int($type) ? PersonType::from($type) : $type;
-
-    return $this;
-  }
-
   /**
    * @return Collection<int, Film>
    */
   public function getFilms(): Collection
   {
-    return $this->films;
+    return $this->actedInFilms;
   }
 
   public function addFilm(Film $film): static
   {
-    if (!$this->films->contains($film)) {
-      $this->films->add($film);
-      $film->addActor($this);
+    if (!$this->actedInFilms->contains($film)) {
+      $this->actedInFilms->add($film);
+
     }
 
     return $this;
   }
   public function removeFilm(Film $film): static
   {
-    if ($this->films->removeElement($film)) {
-      $film->removeActor($this);
+    if ($this->actedInFilms->contains($film)) {
+      $this->actedInFilms->removeElement($film);
     }
 
     return $this;
   }
 
-  public function updateFilms(array $films): static
+  public function updateFilms(array $actedInFilms): static
   {
-    $this->films = new ArrayCollection($films);
+    $this->actedInFilms = new ArrayCollection($actedInFilms);
 
     return $this;
   }
@@ -168,4 +169,62 @@ class Person
   {
     return $this->getFullName();
   }
+
+  /**
+   * @return Collection<int, Specialty>
+   */
+  public function getSpecialties(): Collection
+  {
+    return $this->specialties;
+  }
+
+  public function addSpecialty(Specialty $specialty): static
+  {
+    if (!$this->specialties->contains($specialty)) {
+      $this->specialties->add($specialty);
+      $specialty->addPerson($this);
+    }
+
+    return $this;
+  }
+
+  public function removeSpecialty(Specialty $specialty): static
+  {
+    if ($this->specialties->removeElement($specialty)) {
+      $specialty->removePerson($this);
+    }
+
+    return $this;
+  }
+
+  /**
+   * @return Collection<int, Film>
+   */
+  public function getDirectedFilms(): Collection
+  {
+      return $this->directedFilms;
+  }
+
+  public function addDirectedFilm(Film $directedFilm): static
+  {
+      if (!$this->directedFilms->contains($directedFilm)) {
+          $this->directedFilms->add($directedFilm);
+          $directedFilm->setDirectedBy($this);
+      }
+
+      return $this;
+  }
+
+  public function removeDirectedFilm(Film $directedFilm): static
+  {
+      if ($this->directedFilms->removeElement($directedFilm)) {
+          // set the owning side to null (unless already changed)
+          if ($directedFilm->getDirectedBy() === $this) {
+              $directedFilm->setDirectedBy(null);
+          }
+      }
+
+      return $this;
+  }
+
 }

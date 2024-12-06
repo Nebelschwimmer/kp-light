@@ -13,6 +13,8 @@ final class RestoreTables extends AbstractMigration
 			->addColumn('genre_id', 'integer')
 			->addColumn('release_year', 'string')
 			->addColumn('director_id', 'integer')
+			->addColumn('description', 'text')
+			->addColumn('rating', 'integer')
 			->create();
 		$this->table('film_person', ['id' => false, 'primary_key' => ['film_id', 'person_id']])
 			->addColumn('film_id', 'integer')
@@ -27,7 +29,13 @@ final class RestoreTables extends AbstractMigration
 			->addColumn('gender', 'smallinteger')
 			->addColumn('birthday', 'datetime')
 			->addColumn('photo', 'string', ['null' => true])
-			->addColumn('type', 'integer', ['null' => true])
+			->create();
+		$this->table('specialty')
+			->addColumn('name', 'string')
+			->create();
+		$this->table('specialty_person', ['id' => false, 'primary_key' => ['specialty_id', 'person_id']])
+			->addColumn('specialty_id', 'integer')
+			->addColumn('person_id', 'integer')
 			->create();
 	}
 }

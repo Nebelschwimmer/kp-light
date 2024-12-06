@@ -10,6 +10,7 @@ use App\Mapper\Entity\PersonMapper;
 use App\Entity\Person;
 use App\Model\Response\Entity\Person\PersonDetail;
 use App\Model\Response\Entity\Person\PersonForm;
+use App\Repository\SpecialtyRepository;
 use App\Service\FileSystemService;
 use App\Exception\NotFound\PersonNotFoundException;
 use Doctrine\Common\Collections\Order;
@@ -17,12 +18,13 @@ use App\Model\Response\Entity\Person\PersonPaginateList;
 use App\Dto\Entity\Query\PersonQueryDto;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use App\Exception\NotFound\PhotoNotFoundException;
-use App\Enum\PersonType;
+use App\Exception\NotFound\SpecialtyNotFoundException;
 class PersonService
 {
 	public function __construct(
 		private PersonRepository $repository,
 		private FilmRepository $filmRepository,
+		private SpecialtyRepository $specialtyRepository,
 		private PersonMapper $personMapper,
 		private FileSystemService $fileSystemService
 	) {
@@ -53,7 +55,6 @@ class PersonService
 			->setLastname($dto->lastname)
 			->setBirthday($dto->birthday)
 			->setGender($dto->genderId)
-			->setType($dto->typeId)
 		;
 
 		$this->repository->store($person);
@@ -73,21 +74,20 @@ class PersonService
 		$person->setLastname($dto->lastname);
 		$person->setBirthday($dto->birthday);
 		$person->setGender($dto->genderId);
-		$person->setType($dto->typeId);
 
 		$fims = $person->getFilms();
-		$oldType = $person->getType();
+		// $oldType = $person->getType();
 
-		$newType = $dto->typeId;
-		foreach ($fims as $film) {
-			if ($oldType == PersonType::ACTOR->value && $newType == PersonType::DIRECTOR->value) {
-				$film->setDirector($person);
-				$this->filmRepository->store($film);
-			} else if ($oldType == PersonType::DIRECTOR->value && $newType == PersonType::ACTOR->value) {
-				$film->setDirector(null);
-				$this->filmRepository->store($film);
-			}
-		}
+		// $newType = $dto->typeId;
+		// foreach ($fims as $film) {
+		// 	if ($oldType == PersonType::ACTOR->value && $newType == PersonType::DIRECTOR->value) {
+		// 		$film->setDirector($person);
+		// 		$this->filmRepository->store($film);
+		// 	} else if ($oldType == PersonType::DIRECTOR->value && $newType == PersonType::ACTOR->value) {
+		// 		$film->setDirector(null);
+		// 		$this->filmRepository->store($film);
+		// 	}
+		// }
 
 		$this->repository->store($person);
 
@@ -147,13 +147,53 @@ class PersonService
 		return new PersonList($items);
 	}
 
+	public function addSpecialty(int $id, int $specialtyId): PersonForm
+	{
+		$person = $this->find($id);
+		$specialty = $this->specialtyRepository->find($specialtyId);
+		if (null == $specialty) {
+			throw new SpecialtyNotFoundException();
+		}
+		$person->addSpecialty($specialty);
+
+		$this->repository->store($person);
+		$this->specialtyRepository->store($specialty);
+
+		return $this->findForm($person->getId());
+	}
+
+
+	public function deleteSpecialty(int $id, int $specialtyId): PersonForm
+	{
+		$person = $this->find($id);
+		$specialty = $this->specialtyRepository->find($specialtyId);
+		if (null == $specialty) {
+			throw new SpecialtyNotFoundException();
+		}
+		$person->removeSpecialty($specialty);
+
+		$this->repository->store($person);
+		$this->specialtyRepository->store($specialty);
+
+		return $this->findForm($person->getId());
+	}
+
 	public function listDirectors(): PersonList
 	{
-		$persons = $this->repository->findBy(['type' => PersonType::DIRECTOR->value], ['id' => Order::Ascending->value]);
+		$persons = $this->repository->findAll();
+		$directors = [];
+		foreach ($persons as $person) {
+			$specialties = $person->getSpecialties();
+			foreach ($specialties as $specialty) {
+				if ($specialty->getName() == 'director') {
+					$directors[] = $person;
+				}
+			}
+		}
 
 		$items = array_map(
 			fn(Person $person) => $this->personMapper->mapToListItem($person),
-			$persons
+			$directors
 		);
 
 		return new PersonList($items);
@@ -161,11 +201,20 @@ class PersonService
 
 	public function listActors(): PersonList
 	{
-		$persons = $this->repository->findBy(['type' => PersonType::ACTOR->value], ['id' => Order::Ascending->value]);
+		$persons = $this->repository->findAll();
+		$actors = [];
+		foreach ($persons as $person) {
+			$specialties = $person->getSpecialties();
+			foreach ($specialties as $specialty) {
+				if ($specialty->getName() == 'actor') {
+					$actors[] = $person;
+				}
+			}
+		}
 
 		$items = array_map(
 			fn(Person $person) => $this->personMapper->mapToListItem($person),
-			$persons
+			$actors
 		);
 
 		return new PersonList($items);
@@ -174,7 +223,7 @@ class PersonService
 	public function filter(PersonQueryDto $personQueryDto): PersonPaginateList
 	{
 		$persons = $this->repository->filterByQueryParams($personQueryDto);
-		$total = $this->repository->total();
+		$total = count($persons);
 
 		$items = array_map(
 			fn(Person $person) => $this->personMapper->mapToDetail($person, new PersonDetail()),

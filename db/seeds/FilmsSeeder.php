@@ -37,7 +37,7 @@ class FilmsSeeder extends AbstractSeed
 				'name' => 'Dumb and Dumber',
 				'release_year' => '1994',
 				'genre_id' => 3,
-				'decription' => 'Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.',
+				'description' => 'Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.',
 				'rating' => 0
 			],
 			[

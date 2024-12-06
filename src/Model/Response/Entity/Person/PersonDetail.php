@@ -17,10 +17,12 @@ class PersonDetail
   public ?string $gender;
   #[OA\Property(example: '1984-01-01')]
   public ?string $birthday;
-  #[OA\Property(example: 'actor')]
-  public ?string $type;
+  
+  #[OA\Property(example: ['actor', 'producer'])]
+  public ?array $specialtyNames;
+
   #[OA\Property(example: [2, 3])]
-  public array $films = [];
+  public array $actedInFilms = [];
 
 
   public function getId(): int
@@ -89,23 +91,23 @@ class PersonDetail
     return $this;
   }
 
-  public function getType(): string
+  public function getActedInFilms(): array
   {
-    return $this->type;
+    return $this->actedInFilms;
   }
-  public function setType(string $type): static
+  public function setActedInFilms(array $actedInFilms): static
   {
-    $this->type = $type;
+    $this->actedInFilms = $actedInFilms;
 
     return $this;
   }
-  public function getFilms(): array
+  public function getSpecialtyNames(): array
   {
-    return $this->films;
+    return $this->specialtyNames;
   }
-  public function setFilms(array $films): static
+  public function setSpecialtyNames(array $specialtyNames): static
   {
-    $this->films = $films;
+    $this->specialtyNames = $specialtyNames;
 
     return $this;
   }

@@ -28,7 +28,7 @@ class PersonMapper
   {
     return $model
       ->setId($person->getId())
-      ->setFullname($person->getFullname())
+      ->setName($person->getFullname())
     ;
   }
   public function mapToListItem(Person $person): PersonListItem
@@ -45,10 +45,10 @@ class PersonMapper
       ->setFirstname($person->getFirstname())
       ->setLastname($person->getLastname())
       ->setGender($person->getGender()->trans($this->translator))
-      ->setType($person->getType()->trans($this->translator))
       ->setBirthday($person->getBirthday()->format('Y-m-d'))
-      ->setFilms($this->mapToFilmNameWithId($person))
+      ->setActedInFilms($this->mapToFilmNameWithId($person))
       ->setPhoto($person->getPhoto() ?: '')
+      ->setSpecialtyNames($this->mapSpecialtiesToNames($person))
     ;
   }
 
@@ -60,9 +60,9 @@ class PersonMapper
       ->setLastname($person->getLastname())
       ->setGenderId($person->getGender()->value)
       ->setBirthday($person->getBirthday()->format('Y-m-d'))
-      ->setTypeId($person->getType()->value)
-      ->setFilmIds($this->mapFilmsToIds($person))
+      ->setActedInFilmIds($this->mapFilmsToIds($person))
       ->setPhoto($person->getPhoto() ?: '')
+      ->setSpecialtyIds($this->mapSpecialtiesToIds($person))
     ;
   }
   private function mapFilmsToIds(Person $person): array
@@ -81,8 +81,46 @@ class PersonMapper
     $filmNames = array_map(fn(Film $film) => [
       'id' => $film->getId(),
       'name' => $film->getName(),
+      'roles' => $this->definePersonRolesInFilm($film, $person),
     ], $films);
 
     return $filmNames;
+  }
+
+  private function mapSpecialtiesToNames(Person $person): array
+  {
+    $specialties = $person->getSpecialties()->toArray();
+
+    $specialtyNames = array_map(fn($specialty) => $specialty->getName(), $specialties);
+
+    return $specialtyNames;
+  }
+
+  private function definePersonRolesInFilm(Film $film, Person $person): array
+  {
+    $actors = $film->getActors()->toArray();
+    $roles = [];
+    foreach ($actors as $actor) {
+      if ($actor->getId() == $person->getId()) {
+        $roles[] = 'actor';
+      }
+    }
+    $director = $film->getDirectedBy() ?? null;
+    if (null !== $director) {
+      if ($director->getId() == $person->getId()) {
+        $roles[] = 'director';
+      }
+    }
+
+    return $roles;
+  }
+
+  private function mapSpecialtiesToIds(Person $person): array
+  {
+    $specialties = $person->getSpecialties()->toArray();
+
+    $specialtyIds = array_map(fn($specialty) => $specialty->getId(), $specialties);
+
+    return $specialtyIds;
   }
 }

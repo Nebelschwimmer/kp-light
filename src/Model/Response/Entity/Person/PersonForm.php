@@ -15,10 +15,13 @@ class PersonForm
   public ?int $genderId = 1;
   #[OA\Property(example: '1984-01-01')]
   public ?string $birthday = null;
-  #[OA\Property(example: 1)]
-  public ?int $typeId = 1;
+
+
   #[OA\Property(example: [2, 3])]
-  public array $filmIds = [];
+  public array $actedInfilmIds = [];
+
+  #[OA\Property(example: [1, 2])]
+  public array $specialtyIds = [];
 
   public string $photo = '';
 
@@ -79,23 +82,13 @@ class PersonForm
     return $this;
   }
 
-  public function getTypeId(): int
+  public function getActedInFilmIds(): array
   {
-    return $this->typeId;
+    return $this->actedInfilmIds;
   }
-  public function setTypeId(int $typeId): static
+  public function setActedInFilmIds(array $actedInfilmIds): static
   {
-    $this->typeId = $typeId;
-
-    return $this;
-  }
-  public function getFilmIds(): array
-  {
-    return $this->filmIds;
-  }
-  public function setFilmIds(array $filmIds): static
-  {
-    $this->filmIds = $filmIds;
+    $this->actedInfilmIds = $actedInfilmIds;
 
     return $this;
   }
@@ -106,7 +99,18 @@ class PersonForm
   }
   public function setPhoto(string $photo): static
   {
-    $this->photo = $photo;  
+    $this->photo = $photo;
+
+    return $this;
+  }
+
+  public function getSpecialtyIds(): array
+  {
+    return $this->specialtyIds;
+  }
+  public function setSpecialtyIds(array $specialtyIds): static
+  {
+    $this->specialtyIds = $specialtyIds;
 
     return $this;
   }

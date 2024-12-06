@@ -574,4 +574,32 @@ class FilmController extends AbstractController
 
     return $this->json($data, $status);
   }
+    /**
+   * Remove director from a film
+   */
+  #[Route(path: '/api/films/{id}/director',
+    name: 'api_film_director_delete',
+    methods: ['DELETE'],
+  )
+  ]
+  #[OA\Response(
+    response: 200,
+    description: 'Successful response',
+    content: new Model(type: FilmDetail::class)
+  )]
+  public function deleteDirector(
+    int $id,
+  ): Response {
+    $data = null;
+    $status = Response::HTTP_OK;
+    try {
+      $data = $this->filmService->deleteDirector($id);
+    } catch (\Throwable $e) {
+      $this->logger->error($e);
+      $data = $e->getMessage();
+      $status = Response::HTTP_INTERNAL_SERVER_ERROR;
+    }
+
+    return $this->json($data, $status);
+  }
 }

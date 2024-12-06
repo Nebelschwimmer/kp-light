@@ -22,6 +22,7 @@ use Symfony\Component\HttpFoundation\Request;
 use App\Service\Validator\Entity\Person\PersonValidator;
 use App\Exception\ValidatorException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use App\Dto\Entity\PersonSpecialtyDto;
 use OpenApi\Attributes as OA;
 use OpenApi\Attributes\MediaType;
 use OpenApi\Attributes\RequestBody;
@@ -262,17 +263,17 @@ class PersonController extends AbstractController
 	)]
 	#[RequestBody(
 		content: [
-				new MediaType(
-						mediaType: 'multipart/form-data',
-						schema: new Schema(properties: [
-								new OA\Property(
-										property: 'photo',
-										type: 'file',
-								),
-						])
-				),
+			new MediaType(
+				mediaType: 'multipart/form-data',
+				schema: new Schema(properties: [
+					new OA\Property(
+						property: 'photo',
+						type: 'file',
+					),
+				])
+			),
 		]
-)]
+	)]
 	#[OA\Response(
 		response: 200,
 		description: 'Upload photo',
@@ -289,13 +290,13 @@ class PersonController extends AbstractController
 		try {
 			/** @var UploadedFile $photo */
 			$photo = $request->files->get('photo');
-	
-				if (null === $photo) {
-					$status = Response::HTTP_BAD_REQUEST;
-					$data = 'No file found in request. Did you forget to specify the formdata key "photo"?';
-					return $this->json($data, $status);
-				}
-		
+
+			if (null === $photo) {
+				$status = Response::HTTP_BAD_REQUEST;
+				$data = 'No file found in request. Did you forget to specify the formdata key "photo"?';
+				return $this->json($data, $status);
+			}
+
 
 			$data = $this->personService->uploadPhoto($id, $photo);
 		} catch (\Throwable $e) {
@@ -328,6 +329,78 @@ class PersonController extends AbstractController
 
 		try {
 			$data = $this->personService->deletePhoto($id);
+		} catch (\Throwable $e) {
+			$this->logger->error($e);
+			$data = $e->getMessage();
+			$status = Response::HTTP_INTERNAL_SERVER_ERROR;
+		}
+
+		return $this->json($data, $status);
+	}
+
+	/**
+	 * Add a specialty to a person
+	 */
+	#[Route(
+		path: 'api/persons/{id}/specialty',
+		name: 'api_person_specialty_add',
+		methods: ['POST']
+	)]
+	#[OA\Response(
+		response: 200,
+		description: 'A new specialty has been added',
+		content: new Model(type: PersonForm::class)
+	)]
+	public function addSpecialty(
+		int $id,
+		#[MapRequestPayload] ?PersonSpecialtyDto $dto,
+	): Response {
+		$data = null;
+		$status = Response::HTTP_OK;
+
+		try {
+			$specialtyId = $dto->specialtyId;
+			$data = $this->personService->addSpecialty($id, $specialtyId);
+		} catch (ValidatorException $e) {
+			$this->logger->error($e);
+			$status = Response::HTTP_BAD_REQUEST;
+			$data = $e->getMessage();
+		} catch (\Throwable $e) {
+			$this->logger->error($e);
+			$data = $e->getMessage();
+			$status = Response::HTTP_INTERNAL_SERVER_ERROR;
+		}
+
+		return $this->json($data, $status);
+	}
+
+	/**
+	 * Remove a person's specialty
+	 */
+	#[Route(
+		path: 'api/persons/{id}/specialty',
+		name: 'api_person_specialty_delete',
+		methods: ['DELETE']
+	)]
+	#[OA\Response(
+		response: 200,
+		description: 'The specialty has been removed',
+		content: new Model(type: PersonForm::class)
+	)]
+	public function deleteSpecialty(
+		int $id,
+		#[MapRequestPayload] ?PersonSpecialtyDto $dto,
+	): Response {
+		$data = null;
+		$status = Response::HTTP_OK;
+
+		try {
+			$specialtyId = $dto->specialtyId;
+			$data = $this->personService->deleteSpecialty($id, $specialtyId);
+		} catch (ValidatorException $e) {
+			$this->logger->error($e);
+			$status = Response::HTTP_BAD_REQUEST;
+			$data = $e->getMessage();
 		} catch (\Throwable $e) {
 			$this->logger->error($e);
 			$data = $e->getMessage();

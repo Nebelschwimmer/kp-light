@@ -2,8 +2,9 @@
 
 namespace App\Entity;
 
-use App\Enum\PersonType;
+use App\Enum\Genres;
 use App\Repository\FilmRepository;
+use Cake\Database\Type\EnumType;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -21,8 +22,8 @@ class Film
   #[ORM\Column(length: 255)]
   private ?string $name = null;
 
-  #[ORM\ManyToOne(inversedBy: 'films')]
-  private ?Genre $genre = null;
+  #[ORM\Column(type: Types::JSON)]
+  private ?array $genres = [];
 
   #[ORM\Column]
   private ?int $releaseYear = null;
@@ -44,8 +45,11 @@ class Film
   #[ORM\JoinTable(name: 'film_person')]
   private Collection $actors;
 
-  #[ORM\ManyToOne(cascade: ['persist'])]
-  private ?Person $director = null;
+  // #[ORM\ManyToOne(cascade: ['persist'])]
+  // private ?Person $director = null;
+
+  #[ORM\ManyToOne(inversedBy: 'directedFilms')]
+  private ?Person $directedBy = null;
 
   public function __construct()
   {
@@ -69,14 +73,35 @@ class Film
     return $this;
   }
 
-  public function getGenre(): ?Genre
+  public function getGenres(): ?array
   {
-    return $this->genre;
+    return $this->genres;
   }
 
-  public function setGenre(?Genre $genre): static
+  public function setGenres(array $genres): static
   {
-    $this->genre = $genre;
+    foreach ($genres as $genre) {
+      if (!Genres::isValid($genre)) {
+        throw new \InvalidArgumentException("Invalid genre: $genre");
+      }
+    }
+    $this->genres = $genres;
+
+    return $this;
+  }
+
+  public function addGenre(Genres $genre): static
+  {
+    if (!in_array($genre->value, $this->genres, true)) {
+      $this->genres[] = $genre->value;
+    }
+
+    return $this;
+  }
+
+  public function removeGenre(Genres $genre): static
+  {
+    $this->genres = array_filter($this->genres, fn($genre) => $genre !== $genre->value);
 
     return $this;
   }
@@ -98,8 +123,7 @@ class Film
    */
   public function getActors(): Collection
   {
-    $actors = $this->actors->filter(fn(Person $actor) => $actor->getType() === PersonType::ACTOR);
-    return $actors;
+    return $this->actors;
   }
 
   public function addActor(Person $actor): static
@@ -126,26 +150,17 @@ class Film
   }
 
 
-  public function getDirector(): ?Person
-  {
-    if ($this->director && $this->director->getType() !== PersonType::DIRECTOR) {
-      $this->director =  null;
-    }
+  // public function getDirector(): ?Person
+  // {
+  //   return $this->director;
+  // }
 
-    return $this->director;
-  }
+  // public function setDirector(?Person $director): static
+  // {
+  //   $this->director = $director;
 
-  public function setDirector(?Person $director): static
-  {
-    if (
-      $director &&
-      $director->getType() === PersonType::DIRECTOR
-    ) {
-      $this->director = $director;
-    }
-
-    return $this;
-  }
+  //   return $this;
+  // }
 
   public function getPreview(): string
   {
@@ -180,7 +195,7 @@ class Film
     $this->description = $description;
 
     return $this;
-  } 
+  }
 
   public function getRating(): ?int
   {
@@ -197,5 +212,17 @@ class Film
   public function __toString()
   {
     return $this->name;
+  }
+
+  public function getDirectedBy(): ?Person
+  {
+      return $this->directedBy;
+  }
+
+  public function setDirectedBy(?Person $directedBy): static
+  {
+      $this->directedBy = $directedBy;
+
+      return $this;
   }
 }
