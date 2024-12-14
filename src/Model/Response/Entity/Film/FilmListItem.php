@@ -5,10 +5,15 @@ use OpenApi\Attributes as OA;
 
 class FilmListItem
 {
-  public function __construct(?int $id = null, ?string $name)
+  public function __construct(?int $id = null, ?string $name, ?string $directorName, ?string $preview, array $genres, int $releaseYear, float $rating) 
   {
     $this->id = $id;
     $this->name = $name;
+    $this->directorName = $directorName;
+    $this->preview = $preview;
+    $this->genres = $genres;
+    $this->releaseYear = $releaseYear;
+    $this->rating = $rating;
   }
   #[OA\Property(example: 1)]
   public ?int $id;
@@ -19,6 +24,12 @@ class FilmListItem
   public ?string $directorName;
 
   public ?string $preview;
+
+  public array $genres = [];
+
+  public int $releaseYear;
+
+  public float $rating;
 
   public function getId(): int
   {
@@ -59,6 +70,41 @@ class FilmListItem
   public function setDirectorName(string $directorName): static
   {
     $this->directorName = $directorName;
+
+    return $this;
+  }
+  public function getGenres(): array
+  {
+    return $this->genres;
+  }
+
+  public function setGenres(array $genres): static
+  {
+    $this->genres = $genres;
+
+    return $this;
+  }
+
+  public function getReleaseYear(): int
+  {
+    return $this->releaseYear;
+  }
+
+  public function setReleaseYear(int $releaseYear): static
+  {
+    $this->releaseYear = $releaseYear;
+
+    return $this;
+  }
+
+  public function getRating(): float
+  {
+    return $this->rating;
+  }
+
+  public function setRating(float $rating): static
+  {
+    $this->rating = $rating;
 
     return $this;
   }

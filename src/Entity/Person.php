@@ -41,18 +41,42 @@ class Person
   #[ORM\ManyToMany(targetEntity: Film::class, mappedBy: 'actors', cascade: ['persist'])]
   private Collection $actedInFilms;
 
+
   /**
    * @var Collection<int, Specialty>
    */
   #[ORM\ManyToMany(targetEntity: Specialty::class, mappedBy: 'person')]
   private Collection $specialties;
 
+  /**
+   * @var Collection<int, Film>
+   */
+  #[ORM\OneToMany(targetEntity: Film::class, mappedBy: 'directedBy')]
+  private Collection $directedFilms;
+
+  /**
+   * @var Collection<int, Film>
+   */
+  #[ORM\OneToMany(targetEntity: Film::class, mappedBy: 'producer')]
+  private Collection $producedFilms;
+
+  /**
+   * @var Collection<int, Film>
+   */
+  #[ORM\OneToMany(targetEntity: Film::class, mappedBy: 'writer')]
+  private Collection $writtenFlms;
+
+
 
   public function __construct()
   {
     $this->actedInFilms = new ArrayCollection();
     $this->specialties = new ArrayCollection();
+    $this->directedFilms = new ArrayCollection();
+    $this->producedFilms = new ArrayCollection();
+    $this->writtenFlms = new ArrayCollection();
   }
+
 
   public function getId(): ?int
   {
@@ -186,6 +210,96 @@ class Person
     }
 
     return $this;
+  }
+
+  /**
+   * @return Collection<int, Film>
+   */
+  public function getDirectedFilms(): Collection
+  {
+      return $this->directedFilms;
+  }
+
+  public function addDirectedFilm(Film $directedFilm): static
+  {
+      if (!$this->directedFilms->contains($directedFilm)) {
+          $this->directedFilms->add($directedFilm);
+          $directedFilm->setDirectedBy($this);
+      }
+
+      return $this;
+  }
+
+  public function removeDirectedFilm(Film $directedFilm): static
+  {
+      if ($this->directedFilms->removeElement($directedFilm)) {
+          // set the owning side to null (unless already changed)
+          if ($directedFilm->getDirectedBy() === $this) {
+              $directedFilm->setDirectedBy(null);
+          }
+      }
+
+      return $this;
+  }
+
+  /**
+   * @return Collection<int, Film>
+   */
+  public function getProducedFilms(): Collection
+  {
+      return $this->producedFilms;
+  }
+
+  public function addProducedFilm(Film $producedFilm): static
+  {
+      if (!$this->producedFilms->contains($producedFilm)) {
+          $this->producedFilms->add($producedFilm);
+          $producedFilm->setProducer($this);
+      }
+
+      return $this;
+  }
+
+  public function removeProducedFilm(Film $producedFilm): static
+  {
+      if ($this->producedFilms->removeElement($producedFilm)) {
+          // set the owning side to null (unless already changed)
+          if ($producedFilm->getProducer() === $this) {
+              $producedFilm->setProducer(null);
+          }
+      }
+
+      return $this;
+  }
+
+  /**
+   * @return Collection<int, Film>
+   */
+  public function getWrittenFlms(): Collection
+  {
+      return $this->writtenFlms;
+  }
+
+  public function addWrittenFlm(Film $writtenFlm): static
+  {
+      if (!$this->writtenFlms->contains($writtenFlm)) {
+          $this->writtenFlms->add($writtenFlm);
+          $writtenFlm->setWriter($this);
+      }
+
+      return $this;
+  }
+
+  public function removeWrittenFlm(Film $writtenFlm): static
+  {
+      if ($this->writtenFlms->removeElement($writtenFlm)) {
+          // set the owning side to null (unless already changed)
+          if ($writtenFlm->getWriter() === $this) {
+              $writtenFlm->setWriter(null);
+          }
+      }
+
+      return $this;
   }
 
 }

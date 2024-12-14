@@ -5,9 +5,13 @@ use App\Model\Response\Entity\Film\FilmDetail;
 use App\Model\Response\Entity\Film\FilmForm;
 use App\Model\Response\Entity\Film\FilmList;
 use App\Model\Response\Entity\Film\FilmListItem;
-use App\Enum\PersonType;
+use Symfony\Contracts\Translation\TranslatorInterface;
 class FilmMapper
 {
+  public function __construct(
+    private TranslatorInterface $translator,
+  ) {
+  }
 
   public function mapToEntityList(array $films): FilmList
   {
@@ -24,6 +28,9 @@ class FilmMapper
     return $model
       ->setId($film->getId())
       ->setName($film->getName())
+      ->setRating($film->getRating() ?? 0)
+      ->setReleaseYear($film->getReleaseYear())
+      ->setDirectorName($film->getDirectedBy() ? $film->getDirectedBy()->getFullname() : '')
     ;
   }
   public function mapToDetail(Film $film, FilmDetail $model): FilmDetail
@@ -31,15 +38,20 @@ class FilmMapper
     return $model
       ->setId($film->getId())
       ->setName($film->getName())
-      ->setGenreId($film->getGenre()->getId())
+      ->setGenreIds($film->getGenres())
       ->setReleaseYear($film->getReleaseYear())
       ->setActorIds($this->transformActorsToIds($film))
-      ->setDirectorId($film->getDirector() ? $film->getDirector()->getId() : null)
-      ->setDirectorName($film->getDirector() ? $film->getDirector()->getFullname() : '')
-      ->setGenreName($film->getGenre()->getName())
+      ->setDirectorId($film->getDirectedBy() ? $film->getDirectedBy()->getId() : null)
+      ->setDirectorName($film->getDirectedBy() ? $film->getDirectedBy()->getFullname() : '')
       ->setActorNames($this->transformActorsToNames($film))
       ->setDescription($film->getDescription())
-      ->setRating($film->getRating())
+      ->setRating($film->getRating() ?? 0.0)
+      ->setAge($film->getAge())
+      ->setDuration($film->getDuration())
+      ->setProducerName($film->getProducer() ? $film->getProducer()->getFullname() : null)
+      ->setProducerId($film->getProducer() ? $film->getProducer()->getId() : null)
+      ->setWriterName($film->getWriter() ? $film->getWriter()->getFullname() : null)
+      ->setWriterId($film->getWriter() ? $film->getWriter()->getId() : null)
     ;
   }
 
@@ -48,10 +60,12 @@ class FilmMapper
     return $model
       ->setId($film->getId())
       ->setName($film->getName())
-      ->setGenreId($film->getGenre()->getId())
+      ->setGenres($film->getGenres())
       ->setReleaseYear($film->getReleaseYear())
       ->setActorIds($this->transformActorsToIds($film))
-      ->setDirectorId($film->getDirector() ? $film->getDirector()->getId() : null)
+      ->setDirectorId($film->getDirectedBy() ? $film->getDirectedBy()->getId() : null)
+      ->setWriterId($film->getWriter() ? $film->getWriter()->getId() : null)
+      ->setProducerId($film->getProducer() ? $film->getProducer()->getId() : null)
     ;
   }
 
@@ -60,6 +74,12 @@ class FilmMapper
     return new FilmListItem(
       $film->getId(),
       $film->getName(),
+      $film->getDirectedBy() ? $film->getDirectedBy()->getFullname() : '',
+      $film->getPreview(),
+      $film->getGenres(),
+      $film->getReleaseYear(), 
+      $film->getRating()
+
     );
   }
   private function transformActorsToNames(Film $film): array

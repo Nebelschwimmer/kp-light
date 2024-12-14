@@ -13,7 +13,7 @@ use App\Model\Response\Entity\Film\FilmList;
 use App\Dto\Entity\Query\FilmQueryDto;
 use App\Model\Response\Entity\Film\FilmPaginateList;
 use App\Entity\Film;
-use App\Repository\GenreRepository;
+use App\Enum\Genres;
 use App\Repository\PersonRepository;
 use Doctrine\Common\Collections\Order;
 use App\Exception\NotFound\FilmNotFoundException;
@@ -24,14 +24,12 @@ use App\Entity\Person;
 use App\Model\Response\Entity\Person\PersonDetail;
 use App\Mapper\Entity\PersonMapper;
 use App\Exception\NotFound\GenreNotFoundException;
-use App\Enum\SpecialtyName;
 
 class FilmService
 {
   public function __construct(
     private FilmRepository $repository,
     private PersonRepository $personRepository,
-    private GenreRepository $genreRepository,
     private FilmMapper $filmMapper,
     private PersonMapper $personMapper,
     private FileSystemService $fileSystemService
@@ -99,7 +97,7 @@ class FilmService
   public function findDirector(int $id): PersonDetail
   {
     $film = $this->find($id);
-    $director = $film->getDirector();
+    $director = $film->getDirectedBy();
     if (null === $director) {
       throw new PersonNotFoundException();
     }
@@ -117,7 +115,7 @@ class FilmService
     }
     $specialties = $person->getSpecialties();
     foreach ($specialties as $specialty) {
-      if ($specialty->getName() == SpecialtyName::ACTOR->value) {
+      if ($specialty->getName() == 'actor') {
         $actor = $person;
         break;
       }
@@ -137,7 +135,7 @@ class FilmService
   public function deleteActor(int $filmId, int $actorId): FilmForm
   {
     $film = $this->find($filmId);
-    $actor = $this->personRepository->find( $actorId);
+    $actor = $this->personRepository->find($actorId);
 
     if (null === $actor) {
       throw new PersonNotFoundException();
@@ -158,13 +156,13 @@ class FilmService
     $person = $this->personRepository->find($directorId);
 
     $director = null;
-    
+
     if (null === $person) {
       throw new PersonNotFoundException();
     }
     $specialties = $person->getSpecialties();
     foreach ($specialties as $specialty) {
-      if ($specialty->getName() == SpecialtyName::DIRECTOR->value) {
+      if ($specialty->getName() == 'director') {
         $director = $person;
         break;
       }
@@ -172,24 +170,24 @@ class FilmService
     if (null === $director) {
       throw new SpecialtyNotFoundException();
     }
-    $film->setDirector($director);
+    $film->setDirectedBy($director);
     $this->repository->store($film);
-    
+
     $person->addFilm($film);
     $this->personRepository->store($person);
-    
+
     return $this->findForm($filmId);
   }
 
   public function deleteDirector(int $filmId): FilmForm
   {
     $film = $this->find($filmId);
-    $director = $film->getDirector();
+    $director = $film->getDirectedBy();
     if (null === $director) {
       throw new PersonNotFoundException();
     }
 
-    $film->setDirector(null);
+    $film->setDirectedBy(null);
     $director->removeFilm($film);
 
     $this->repository->store($film);
@@ -202,12 +200,16 @@ class FilmService
   public function filter(FilmQueryDto $filmQueryDto): FilmPaginateList
   {
     $films = $this->repository->filterByQueryParams($filmQueryDto);
-    $total = $this->repository->total();
+    $total = count($films);
 
     $items = array_map(
       fn(Film $film) => $this->filmMapper->mapToDetail($film, new FilmDetail()),
       $films
     );
+    foreach ($items as $item) {
+      $shortPreviewPath = $this->getPreviewShortPath($item->getId());
+      $item->setPreview($shortPreviewPath);
+    }
 
     return new FilmPaginateList($items, $total);
   }
@@ -215,19 +217,46 @@ class FilmService
   public function create(FilmDto $dto): FilmForm
   {
     $film = new Film();
-    $film
-      ->setName($dto->name)
-      ->setReleaseYear($dto->releaseYear);
-
-    $genreId = $dto->genreId;
-    if (null !== $genreId) {
-      $genre = $this->genreRepository->find($genreId);
-      if (null === $genre) {
-        throw new GenreNotFoundException();
+    $actorIds = $dto->actorIds;
+    foreach ($actorIds as $actorId) {
+      $actor = $this->personRepository->find($actorId);
+      if (null === $actor) {
+        throw new PersonNotFoundException();
       }
-      $film->setGenre($genre);
+      $film->addActor($actor);
+      $this->personRepository->store($actor);
     }
 
+    $directorId = $dto->directorId;
+    $director = $this->personRepository->find($directorId);
+    if (null === $director) {
+      throw new PersonNotFoundException();
+    }
+    $film->setDirectedBy($director);
+    $genreIds = $dto->genreIds;
+    foreach ($genreIds as $genreId) {
+      Genres::isValid($genreId) ? $film->addGenre(Genres::matchIdAndGenre ($genreId )): throw new GenreNotFoundException();
+    }
+
+    $producerId = $dto->producerId;
+    $producer = $this->personRepository->find($producerId);
+    if (null === $producer) {
+      throw new PersonNotFoundException();
+    }
+    $film->setProducer($producer);
+    $writerId = $dto->writerId;
+    $writer = $this->personRepository->find($writerId);
+    if (null === $writer) {
+      throw new PersonNotFoundException();
+    }
+    $film->setWriter($writer);
+
+    $film
+      ->setName($dto->name)
+      ->setReleaseYear($dto->releaseYear)
+      ->setGenres($dto->genreIds)
+      ->setDuration($dto->duration)
+    ;
     $this->repository->store($film);
 
     return $this->findForm($film->getId());
@@ -238,16 +267,10 @@ class FilmService
     $film = $this->find($id);
     $film
       ->setName($dto->name)
-      ->setReleaseYear($dto->releaseYear);
+      ->setReleaseYear($dto->releaseYear)
+      ->setGenres($dto->genreIds)
+      ;
 
-    $genreId = $dto->genreId;
-    if (null !== $genreId) {
-      $genre = $this->genreRepository->find($genreId);
-      if (null === $genre) {
-        throw new GenreNotFoundException();
-      }
-      $film->setGenre($genre);
-    }
     $this->repository->store($film);
 
     return $this->findForm($film->getId());

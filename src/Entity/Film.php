@@ -2,7 +2,9 @@
 
 namespace App\Entity;
 
+use App\Enum\Genres;
 use App\Repository\FilmRepository;
+use Cake\Database\Type\EnumType;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -20,8 +22,8 @@ class Film
   #[ORM\Column(length: 255)]
   private ?string $name = null;
 
-  #[ORM\ManyToOne(inversedBy: 'films')]
-  private ?Genre $genre = null;
+  #[ORM\Column(type: Types::JSON, enumType: Genres::class)]
+  private array $genres = [];
 
   #[ORM\Column]
   private ?int $releaseYear = null;
@@ -29,8 +31,8 @@ class Film
   #[ORM\Column(type: Types::TEXT)]
   private ?string $description = null;
 
-  #[ORM\Column(length: 255)]
-  private ?int $rating = null;
+  #[ORM\Column(type: Types::FLOAT)]
+  private ?float $rating = null;
 
   private string $preview = '';
 
@@ -43,8 +45,23 @@ class Film
   #[ORM\JoinTable(name: 'film_person')]
   private Collection $actors;
 
-  #[ORM\ManyToOne(cascade: ['persist'])]
-  private ?Person $director = null;
+  #[ORM\ManyToOne(inversedBy: 'directedFilms')]
+  private ?Person $directedBy = null;
+
+  #[ORM\Column(type: Types::TIME_IMMUTABLE)]
+  private ?\DateTimeImmutable $duration = null;
+
+  #[ORM\Column]
+  private ?int $age = null;
+
+  #[ORM\Column(length: 255, nullable: true)]
+  private ?string $slogan = null;
+
+  #[ORM\ManyToOne(inversedBy: 'producedFilms')]
+  private ?Person $producer = null;
+
+  #[ORM\ManyToOne(inversedBy: 'writtenFlms')]
+  private ?Person $writer = null;
 
   public function __construct()
   {
@@ -68,14 +85,35 @@ class Film
     return $this;
   }
 
-  public function getGenre(): ?Genre
+  public function getGenres(): array
   {
-    return $this->genre;
+    return $this->genres;
   }
 
-  public function setGenre(?Genre $genre): static
+  public function setGenres(array $genres): static
   {
-    $this->genre = $genre;
+    foreach ($genres as $genre) {
+      if (!Genres::isValid($genre)) {
+        throw new \InvalidArgumentException("Invalid genre: $genre");
+      }
+    }
+    $this->genres = $genres;
+
+    return $this;
+  }
+
+  public function addGenre(Genres $genre): static
+  {
+    if (!in_array($genre->value, $this->genres, true)) {
+      $this->genres[] = $genre->value;
+    }
+
+    return $this;
+  }
+
+  public function removeGenre(Genres $genre): static
+  {
+    $this->genres = array_filter($this->genres, fn($genre) => $genre !== $genre->value);
 
     return $this;
   }
@@ -123,19 +161,6 @@ class Film
     return $this;
   }
 
-
-  public function getDirector(): ?Person
-  {
-    return $this->director;
-  }
-
-  public function setDirector(?Person $director): static
-  {
-    $this->director = $director;
-
-    return $this;
-  }
-
   public function getPreview(): string
   {
     return $this->preview;
@@ -171,12 +196,12 @@ class Film
     return $this;
   }
 
-  public function getRating(): ?int
+  public function getRating(): ?float
   {
     return $this->rating;
   }
 
-  public function setRating(int $rating): static
+  public function setRating(float $rating): static
   {
     $this->rating = $rating;
 
@@ -187,4 +212,78 @@ class Film
   {
     return $this->name;
   }
+
+  public function getDirectedBy(): ?Person
+  {
+      return $this->directedBy;
+  }
+
+  public function setDirectedBy(?Person $directedBy): static
+  {
+      $this->directedBy = $directedBy;
+
+      return $this;
+  }
+
+  public function getDuration(): ?\DateTimeImmutable
+  {
+      return $this->duration;
+  }
+
+  public function setDuration(\DateTimeImmutable $duration): static
+  {
+      $this->duration = $duration;
+
+      return $this;
+  }
+
+
+  public function getAge(): ?int
+  {
+      return $this->age;
+  }
+
+  public function setAge(int $age): static
+  {
+      $this->age = $age;
+
+      return $this;
+  }
+
+  public function getSlogan(): ?string
+  {
+      return $this->slogan;
+  }
+
+  public function setSlogan(?string $slogan): static
+  {
+      $this->slogan = $slogan;
+
+      return $this;
+  }
+
+  public function getProducer(): ?Person
+  {
+      return $this->producer;
+  }
+
+  public function setProducer(?Person $producer): static
+  {
+      $this->producer = $producer;
+
+      return $this;
+  }
+
+  public function getWriter(): ?Person
+  {
+      return $this->writer;
+  }
+
+  public function setWriter(?Person $writer): static
+  {
+      $this->writer = $writer;
+
+      return $this;
+  }
+
 }

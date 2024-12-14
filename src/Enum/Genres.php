@@ -62,4 +62,27 @@ enum Genres: int implements TranslatableInterface
             ];
         }, self::cases());
     }
+
+    public static function matchIdAndGenre(int $id): ?self
+    {
+        return match ($id) {
+            1 => self::DRAMA,
+            2 => self::ACTION,
+            3 => self::COMEDY,
+            4 => self::THRILLER,
+            5 => self::ROMANCE,
+            6 => self::FANTASY,
+            7 => self::SCIENCE_FICTION,
+            8 => self::HORROR,
+            9 => self::DOCUMENTARY,
+            default => null,
+        };
+    }
+
+    public static function translateGenreIds(?TranslatorInterface $translator = null, string $locale, array $ids)
+    {
+        return array_map(function (int $id) use ($translator, $locale) {
+            return self::matchIdAndGenre($id)->trans($translator, $locale);
+        }, $ids);
+    }
 }

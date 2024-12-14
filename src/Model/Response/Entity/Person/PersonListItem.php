@@ -11,13 +11,13 @@ class PersonListItem
     ?string $fullName = null,
   ) {
     $this->id = $id;
-    $this->fullname = $fullName;
+    $this->name = $fullName;
   }
 
   #[OA\Property(example: 1)]
   public ?int $id;
   #[OA\Property(example: 'John Doe')]
-  public ?string $fullname;
+  public ?string $name;
 
 
   public function getId(): int
@@ -31,14 +31,14 @@ class PersonListItem
 
     return $this;
   }
-  public function getFullname(): string
+  public function getName(): string
   {
-    return $this->fullname;
+    return $this->name;
   }
 
-  public function setFullname(string $fullName): static
+  public function setName(string $name): static
   {
-    $this->fullname = $fullName;
+    $this->name = $name;
 
     return $this;
   }

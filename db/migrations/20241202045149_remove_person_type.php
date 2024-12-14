@@ -8,8 +8,8 @@ final class RemovePersonType extends AbstractMigration
 {
     public function change(): void
     {
-        $this->table('person')
-            ->removeColumn('type')
-            ->update();
+        // $this->table('person')
+        //     ->removeColumn('type')
+        //     ->update();
     }
 }

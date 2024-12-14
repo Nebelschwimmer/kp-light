@@ -223,7 +223,7 @@ class PersonService
 	public function filter(PersonQueryDto $personQueryDto): PersonPaginateList
 	{
 		$persons = $this->repository->filterByQueryParams($personQueryDto);
-		$total = $this->repository->total();
+		$total = count($persons);
 
 		$items = array_map(
 			fn(Person $person) => $this->personMapper->mapToDetail($person, new PersonDetail()),

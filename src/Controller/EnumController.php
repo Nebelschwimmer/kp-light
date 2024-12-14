@@ -14,9 +14,10 @@ class EnumController extends AbstractController
         private TranslatorInterface $translator,
     ) {
     }
-    #[Route('/api/genres/enum/{locale}', name: 'genres_enum')]
+    #[Route('/api/genres/transaltions/{locale}', name: 'genres_list')]
     public function listGenres(string $locale): Response
     {
         return $this->json(Genres::list($this->translator, $locale), Response::HTTP_OK);
     }
+
 }
