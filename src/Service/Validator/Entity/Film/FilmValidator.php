@@ -11,6 +11,7 @@ class FilmValidator extends EntityValidator
 	{
 		return [
 			new ValidationRule('name', $this->translate('film.name'), 'required'),
+			new ValidationRule('genreId', $this->translate('film.genre'), 'required|numeric'),
 		];
 
 	}

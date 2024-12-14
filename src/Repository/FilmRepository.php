@@ -38,7 +38,6 @@ class FilmRepository extends ServiceEntityRepository
 				->setParameter('search', "%{$search}%");
 		}
 		$queryBuilder
-			->orderBy('p.id', 'ASC')
 			->setFirstResult($offset)
 			->setMaxResults($limit);
 		return $queryBuilder->getQuery()->getResult();

@@ -41,27 +41,18 @@ class Person
   #[ORM\ManyToMany(targetEntity: Film::class, mappedBy: 'actors', cascade: ['persist'])]
   private Collection $actedInFilms;
 
-
   /**
    * @var Collection<int, Specialty>
    */
   #[ORM\ManyToMany(targetEntity: Specialty::class, mappedBy: 'person')]
   private Collection $specialties;
 
-  /**
-   * @var Collection<int, Film>
-   */
-  #[ORM\OneToMany(targetEntity: Film::class, mappedBy: 'directedBy')]
-  private Collection $directedFilms;
-
 
   public function __construct()
   {
     $this->actedInFilms = new ArrayCollection();
     $this->specialties = new ArrayCollection();
-    $this->directedFilms = new ArrayCollection();
   }
-
 
   public function getId(): ?int
   {
@@ -195,36 +186,6 @@ class Person
     }
 
     return $this;
-  }
-
-  /**
-   * @return Collection<int, Film>
-   */
-  public function getDirectedFilms(): Collection
-  {
-      return $this->directedFilms;
-  }
-
-  public function addDirectedFilm(Film $directedFilm): static
-  {
-      if (!$this->directedFilms->contains($directedFilm)) {
-          $this->directedFilms->add($directedFilm);
-          $directedFilm->setDirectedBy($this);
-      }
-
-      return $this;
-  }
-
-  public function removeDirectedFilm(Film $directedFilm): static
-  {
-      if ($this->directedFilms->removeElement($directedFilm)) {
-          // set the owning side to null (unless already changed)
-          if ($directedFilm->getDirectedBy() === $this) {
-              $directedFilm->setDirectedBy(null);
-          }
-      }
-
-      return $this;
   }
 
 }

@@ -28,7 +28,7 @@ class PersonMapper
   {
     return $model
       ->setId($person->getId())
-      ->setName($person->getFullname())
+      ->setFullname($person->getFullname())
     ;
   }
   public function mapToListItem(Person $person): PersonListItem
@@ -105,7 +105,7 @@ class PersonMapper
         $roles[] = 'actor';
       }
     }
-    $director = $film->getDirectedBy() ?? null;
+    $director = $film->getDirector() ?? null;
     if (null !== $director) {
       if ($director->getId() == $person->getId()) {
         $roles[] = 'director';

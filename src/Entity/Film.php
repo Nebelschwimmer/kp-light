@@ -2,9 +2,7 @@
 
 namespace App\Entity;
 
-use App\Enum\Genres;
 use App\Repository\FilmRepository;
-use Cake\Database\Type\EnumType;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -22,8 +20,8 @@ class Film
   #[ORM\Column(length: 255)]
   private ?string $name = null;
 
-  #[ORM\Column(type: Types::JSON)]
-  private ?array $genres = [];
+  #[ORM\ManyToOne(inversedBy: 'films')]
+  private ?Genre $genre = null;
 
   #[ORM\Column]
   private ?int $releaseYear = null;
@@ -45,11 +43,8 @@ class Film
   #[ORM\JoinTable(name: 'film_person')]
   private Collection $actors;
 
-  // #[ORM\ManyToOne(cascade: ['persist'])]
-  // private ?Person $director = null;
-
-  #[ORM\ManyToOne(inversedBy: 'directedFilms')]
-  private ?Person $directedBy = null;
+  #[ORM\ManyToOne(cascade: ['persist'])]
+  private ?Person $director = null;
 
   public function __construct()
   {
@@ -73,35 +68,14 @@ class Film
     return $this;
   }
 
-  public function getGenres(): ?array
+  public function getGenre(): ?Genre
   {
-    return $this->genres;
+    return $this->genre;
   }
 
-  public function setGenres(array $genres): static
+  public function setGenre(?Genre $genre): static
   {
-    foreach ($genres as $genre) {
-      if (!Genres::isValid($genre)) {
-        throw new \InvalidArgumentException("Invalid genre: $genre");
-      }
-    }
-    $this->genres = $genres;
-
-    return $this;
-  }
-
-  public function addGenre(Genres $genre): static
-  {
-    if (!in_array($genre->value, $this->genres, true)) {
-      $this->genres[] = $genre->value;
-    }
-
-    return $this;
-  }
-
-  public function removeGenre(Genres $genre): static
-  {
-    $this->genres = array_filter($this->genres, fn($genre) => $genre !== $genre->value);
+    $this->genre = $genre;
 
     return $this;
   }
@@ -150,17 +124,17 @@ class Film
   }
 
 
-  // public function getDirector(): ?Person
-  // {
-  //   return $this->director;
-  // }
+  public function getDirector(): ?Person
+  {
+    return $this->director;
+  }
 
-  // public function setDirector(?Person $director): static
-  // {
-  //   $this->director = $director;
+  public function setDirector(?Person $director): static
+  {
+    $this->director = $director;
 
-  //   return $this;
-  // }
+    return $this;
+  }
 
   public function getPreview(): string
   {
@@ -212,17 +186,5 @@ class Film
   public function __toString()
   {
     return $this->name;
-  }
-
-  public function getDirectedBy(): ?Person
-  {
-      return $this->directedBy;
-  }
-
-  public function setDirectedBy(?Person $directedBy): static
-  {
-      $this->directedBy = $directedBy;
-
-      return $this;
   }
 }

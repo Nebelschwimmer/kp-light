@@ -8,8 +8,8 @@ class FilmDetail
   public int $id;
   #[OA\Property(example: 'Star Trek')]
   public string $name;
-  #[OA\Property(example: ['sci-fi', 'adventure'])]
-  public array $genres;
+  #[OA\Property(example: 4)]
+  public int $genreId;
   #[OA\Property(example: 1966)]
   public int $releaseYear;
   public array $actorIds = [];
@@ -19,12 +19,12 @@ class FilmDetail
   #[OA\Property(example: ['Tom Cruise', 'Leonardo DiCaprio'])]
   public array $actorNames = [];
   #[OA\Property(example: 'sci-fi')]
-
+  public ?string $genreName;
   public ?string $preview;
   #[OA\Property(example: 'A new hope is on the way!')]
   public ?string $description;
   #[OA\Property(example: 'A new hope is on the way!')]
-  public ?int $rating;
+  public int $rating;
 
   public array $gallery = [];
 
@@ -50,13 +50,13 @@ class FilmDetail
 
     return $this;
   }
-  public function getGenres(): array
+  public function getGenreId(): int
   {
-    return $this->genres;
+    return $this->genreId;
   }
-  public function setGenres(?array $genres): static
+  public function setGenreId(?int $genreId): static
   {
-    $this->genreId = $genres;
+    $this->genreId = $genreId;
 
     return $this;
   }
@@ -110,7 +110,17 @@ class FilmDetail
 
     return $this;
   }
-  public function getPreview(): ?string
+  public function getGenreName(): ?string
+  {
+    return $this->genreName;
+  }
+  public function setGenreName(?string $genreName): static
+  {
+    $this->genreName = $genreName;
+
+    return $this;
+  }
+  public function getPreview(): string
   {
     return $this->preview;
   }
@@ -141,7 +151,7 @@ class FilmDetail
 
     return $this;
   }
-  public function getRating(): ?int
+  public function getRating(): int
   {
     return $this->rating;
   }

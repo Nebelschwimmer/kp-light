@@ -9,7 +9,7 @@ class FilmForm
   #[OA\Property(example: 'Star Wars')]
   public ?string $name;
   #[OA\Property(example: 4)]
-  public ?array $genres = null;
+  public ?int $genreId = null;
   #[OA\Property(example: 4)]
   public ?int $releaseYear = null;
   #[OA\Property(example: [1, 2, 3])]
@@ -41,13 +41,13 @@ class FilmForm
 
     return $this;
   }
-  public function getGenres(): array
+  public function getGenreId(): int
   {
-    return $this->genres;
+    return $this->genreId;
   }
-  public function setGenres(array $genres): static
+  public function setGenreId(int $genreId): static
   {
-    $this->genres = $genres;
+    $this->genreId = $genreId;
 
     return $this;
   }
