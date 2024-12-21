@@ -63,6 +63,7 @@ class Film
   #[ORM\ManyToOne(inversedBy: 'writtenFlms')]
   private ?Person $writer = null;
 
+
   public function __construct()
   {
     $this->actors = new ArrayCollection();
@@ -113,7 +114,10 @@ class Film
 
   public function removeGenre(Genres $genre): static
   {
-    $this->genres = array_filter($this->genres, fn($genre) => $genre !== $genre->value);
+    $index = array_search($genre->value, $this->genres, true);
+    if ($index !== false) {
+      unset($this->genres[$index]);
+    }
 
     return $this;
   }
@@ -285,5 +289,6 @@ class Film
 
       return $this;
   }
+
 
 }

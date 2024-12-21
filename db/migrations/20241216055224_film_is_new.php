@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-final class ChangeRating extends AbstractMigration
+final class FilmIsNew extends AbstractMigration
 {
     /**
      * Change Method.
@@ -19,9 +19,8 @@ final class ChangeRating extends AbstractMigration
      */
     public function change(): void
     {
-        // $this->table('film')->truncate();
-        // $this->table('film')->removeColumn('rating')
-        //     ->addColumn('rating', 'float', ['null' => true])
+        // $this->table('film')
+        //     ->removeColumn('is_new')
         //     ->update();
 
     }

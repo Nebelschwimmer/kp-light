@@ -8,7 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Enum\Gender;
-
+use App\Enum\Specialty;
 #[ORM\Entity(repositoryClass: PersonRepository::class)]
 class Person
 {
@@ -31,6 +31,8 @@ class Person
   #[ORM\Column(type: Types::DATETIME_MUTABLE)]
   private ?\DateTimeInterface $birthday = null;
 
+  private ?int $age = null;
+
   #[ORM\Column(length: 255, nullable: true)]
   private ?string $photo = null;
 
@@ -42,11 +44,8 @@ class Person
   private Collection $actedInFilms;
 
 
-  /**
-   * @var Collection<int, Specialty>
-   */
-  #[ORM\ManyToMany(targetEntity: Specialty::class, mappedBy: 'person')]
-  private Collection $specialties;
+  #[ORM\Column(type: Types::JSON, enumType: Specialty::class)]
+  private array $specialties;
 
   /**
    * @var Collection<int, Film>
@@ -71,7 +70,6 @@ class Person
   public function __construct()
   {
     $this->actedInFilms = new ArrayCollection();
-    $this->specialties = new ArrayCollection();
     $this->directedFilms = new ArrayCollection();
     $this->producedFilms = new ArrayCollection();
     $this->writtenFlms = new ArrayCollection();
@@ -188,29 +186,7 @@ class Person
   /**
    * @return Collection<int, Specialty>
    */
-  public function getSpecialties(): Collection
-  {
-    return $this->specialties;
-  }
 
-  public function addSpecialty(Specialty $specialty): static
-  {
-    if (!$this->specialties->contains($specialty)) {
-      $this->specialties->add($specialty);
-      $specialty->addPerson($this);
-    }
-
-    return $this;
-  }
-
-  public function removeSpecialty(Specialty $specialty): static
-  {
-    if ($this->specialties->removeElement($specialty)) {
-      $specialty->removePerson($this);
-    }
-
-    return $this;
-  }
 
   /**
    * @return Collection<int, Film>
@@ -300,6 +276,49 @@ class Person
       }
 
       return $this;
+  }
+
+  public function getAge(): ?int
+  {
+    $currentYear = date('Y');
+    return $currentYear - $this->birthday->format('Y');
+  }
+
+  public function setAge(int $age): static
+  {
+    $this->birthday = new \DateTimeImmutable(date('Y') - $age);
+    return $this;
+  }
+
+  public function getSpecialties(): array
+  {
+    return $this->specialties;
+  }
+  
+  public function setSpecialties(array $specialties): static
+  {
+    $this->specialties = $specialties;
+
+    return $this;
+  }
+
+  public function addSpecialty(Specialty $specialty): static
+  {
+    if (!in_array($specialty->value, $this->specialties, true)) {
+      $this->specialties[] = $specialty->value;
+    }
+
+    return $this;
+  }
+
+  public function removeSpecialty(Specialty $specialty): static
+  {
+    $index = array_search($specialty->value, $this->specialties, true);
+    if ($index !== false) {
+      unset($this->specialties[$index]);
+    }
+
+    return $this;
   }
 
 }

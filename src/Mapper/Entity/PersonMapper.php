@@ -7,6 +7,7 @@ use App\Model\Response\Entity\Person\PersonForm;
 use App\Model\Response\Entity\Person\PersonList;
 use App\Model\Response\Entity\Person\PersonListItem;
 use App\Entity\Film;
+use App\Enum\Specialty;
 class PersonMapper
 {
   public function __construct(
@@ -48,7 +49,7 @@ class PersonMapper
       ->setBirthday($person->getBirthday()->format('Y-m-d'))
       ->setActedInFilms($this->mapToFilmNameWithId($person))
       ->setPhoto($person->getPhoto() ?: '')
-      ->setSpecialtyNames($this->mapSpecialtiesToNames($person))
+      ->setSpecialtyNames($this->matchSpecialtyIdsToTranslations($person->getSpecialties()))
     ;
   }
 
@@ -62,7 +63,7 @@ class PersonMapper
       ->setBirthday($person->getBirthday()->format('Y-m-d'))
       ->setActedInFilmIds($this->mapFilmsToIds($person))
       ->setPhoto($person->getPhoto() ?: '')
-      ->setSpecialtyIds($this->mapSpecialtiesToIds($person))
+      ->setSpecialtyIds($person->getSpecialties())
     ;
   }
   private function mapFilmsToIds(Person $person): array
@@ -87,14 +88,7 @@ class PersonMapper
     return $filmNames;
   }
 
-  private function mapSpecialtiesToNames(Person $person): array
-  {
-    $specialties = $person->getSpecialties()->toArray();
 
-    $specialtyNames = array_map(fn($specialty) => $specialty->getName(), $specialties);
-
-    return $specialtyNames;
-  }
 
   private function definePersonRolesInFilm(Film $film, Person $person): array
   {
@@ -115,12 +109,16 @@ class PersonMapper
     return $roles;
   }
 
-  private function mapSpecialtiesToIds(Person $person): array
+  private function matchSpecialtyIdsToTranslations(array $specialties)
   {
-    $specialties = $person->getSpecialties()->toArray();
+    foreach ($specialties as $specialty) {
+      if (!Specialty::isValid($specialty)) {
+        throw new \InvalidArgumentException("Invalid specialty: $specialty");
+      }
+      Specialty::matchIdAndTranslation($specialty);
 
-    $specialtyIds = array_map(fn($specialty) => $specialty->getId(), $specialties);
+    }
 
-    return $specialtyIds;
   }
+
 }

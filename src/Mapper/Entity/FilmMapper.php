@@ -31,6 +31,7 @@ class FilmMapper
       ->setRating($film->getRating() ?? 0)
       ->setReleaseYear($film->getReleaseYear())
       ->setDirectorName($film->getDirectedBy() ? $film->getDirectedBy()->getFullname() : '')
+      ->setDescription($film->getDescription())
     ;
   }
   public function mapToDetail(Film $film, FilmDetail $model): FilmDetail
@@ -77,8 +78,9 @@ class FilmMapper
       $film->getDirectedBy() ? $film->getDirectedBy()->getFullname() : '',
       $film->getPreview(),
       $film->getGenres(),
-      $film->getReleaseYear(), 
-      $film->getRating()
+      $film->getReleaseYear(),
+      $film->getRating(),
+      $film->getDescription()
 
     );
   }
