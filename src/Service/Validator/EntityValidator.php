@@ -15,12 +15,12 @@ abstract class EntityValidator
 	protected array $errors = [];
 	protected array $customValidators = [];
 	protected array $messages = [
-		'required' => 'Поле является обязательным',
-		'email' => ':attribute должен быть действительным адресом электронной почты',
-		'url' => 'Формат :attribute недействителен',
-		'ip' => 'Некорректное значение поля :attribute',
-		'between' => 'Значение поля должно быть задано от :min и до :max',
-		'digits' => 'Значение поля должно состоять из :length цифр',
+		'required' => 'This field is required',
+		'email' => ':attribute is not a valid email',
+		'url' => 'Format :attribute is not valid',
+		'ip' => ':attribute is not a valid ip',
+		'between' => 'The value must be between :min and :max',
+		'digits' => 'The value must be :length цифр',
 	];
 
 	public function __construct(
