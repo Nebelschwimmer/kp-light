@@ -1,0 +1,20 @@
+parameters:
+    person_uploads: "%kernel.project_dir%/public/uploads/person"
+    film_uploads: "%kernel.project_dir%/public/uploads/films"
+    uploads_dir: "%kernel.project_dir%/public/uploads"
+    public_dir: "%kernel.project_dir%/public"
+services:
+    _defaults:
+        autowire: true     
+        autoconfigure: true
+    Rakit\Validation\Validator:
+        autowire: true
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+    App\Service\FileSystemService:
+        arguments:
+        - "@slugger"
