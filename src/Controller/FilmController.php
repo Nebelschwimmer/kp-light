@@ -16,16 +16,15 @@ use App\Exception\NotFound\FilmNotFoundException;
 use Symfony\Component\HttpFoundation\Response;
 use App\Service\Entity\FilmService;
 use App\Dto\Entity\Query\FilmQueryDto;
-use App\Model\Response\Validation\ValidationErrorList;
+
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\HttpFoundation\Request;
-use App\Service\Validator\Entity\Film\FilmValidator;
-use App\Exception\ValidatorException;
+
+
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use App\Model\Response\Entity\Person\PersonList;
 use App\Model\Response\Entity\Person\PersonDetail;
-use App\Dto\Entity\ActorDto;
-use App\Dto\Entity\DirectorDto;
+
 use App\Dto\Common\FileNameSearchDto;
 use OpenApi\Attributes as OA;
 use OpenApi\Attributes\MediaType;
@@ -116,7 +115,7 @@ class FilmController extends AbstractController
     return $this->json($this->filmService->list());
   }
 
-   /**
+  /**
    * Find 5 latest films
    */
   #[Route(path: '/api/films/latest',
@@ -166,28 +165,17 @@ class FilmController extends AbstractController
     description: 'A new film has been created',
     content: new Model(type: FilmForm::class)
   )]
-  #[OA\Response(
-    response: 400,
-    description: 'Validation error',
-    content: new Model(type: ValidationErrorList::class)
-  )]
   #[OA\Response(response: 500, description: 'An error occurred while creating the film')]
 
   public function create(
-    FilmValidator $validator,
     #[MapRequestPayload] ?FilmDto $dto,
   ): Response {
     $data = null;
     $status = Response::HTTP_OK;
 
     try {
-      $validator->validate($dto);
 
       $data = $this->filmService->create($dto);
-    } catch (ValidatorException $e) {
-      $this->logger->error($e);
-      $status = Response::HTTP_BAD_REQUEST;
-      $data = $validator->getErrors();
     } catch (\Throwable $e) {
       $this->logger->error($e);
       $data = $e->getMessage();
@@ -210,15 +198,9 @@ class FilmController extends AbstractController
     description: 'A film has been updated',
     content: new Model(type: FilmForm::class)
   )]
-  #[OA\Response(
-    response: 400,
-    description: 'Validation error',
-    content: new Model(type: ValidationErrorList::class)
-  )]
   #[OA\Response(response: 500, description: 'An error occurred while updating the person')]
   public function update(
     int $id,
-    FilmValidator $validator,
     #[MapRequestPayload] ?FilmDto $dto,
   ): Response {
 
@@ -226,13 +208,8 @@ class FilmController extends AbstractController
     $status = Response::HTTP_OK;
 
     try {
-      $validator->validate($dto);
 
       $data = $this->filmService->update($id, $dto);
-    } catch (ValidatorException $e) {
-      $this->logger->error($e);
-      $status = Response::HTTP_BAD_REQUEST;
-      $data = $validator->getErrors();
     } catch (\Throwable $e) {
       $this->logger->error($e);
       $data = $e->getMessage();
@@ -286,18 +263,18 @@ class FilmController extends AbstractController
     description: 'Upload preview',
   )]
   #[RequestBody(
-		content: [
-				new MediaType(
-						mediaType: 'multipart/form-data',
-						schema: new Schema(properties: [
-								new OA\Property(
-										property: 'preview',
-										type: 'file',
-								),
-						])
-				),
-		]
-)]
+    content: [
+      new MediaType(
+        mediaType: 'multipart/form-data',
+        schema: new Schema(properties: [
+          new OA\Property(
+            property: 'preview',
+            type: 'file',
+          ),
+        ])
+      ),
+    ]
+  )]
   #[OA\Response(response: 500, description: 'An error occurred while uploading the preview')]
   public function uploadPreview(
     int $id,
@@ -322,7 +299,7 @@ class FilmController extends AbstractController
       $data = $e->getMessage();
       $status = Response::HTTP_INTERNAL_SERVER_ERROR;
     }
-    
+
 
     return $this->json($data, $status, );
   }
@@ -370,18 +347,18 @@ class FilmController extends AbstractController
     description: 'Upload gallery',
   )]
   #[RequestBody(
-		content: [
-				new MediaType(
-						mediaType: 'multipart/form-data',
-						schema: new Schema(properties: [
-								new OA\Property(
-										property: 'gallery',
-										type: 'file',
-								),
-						])
-				),
-		]
-)]
+    content: [
+      new MediaType(
+        mediaType: 'multipart/form-data',
+        schema: new Schema(properties: [
+          new OA\Property(
+            property: 'gallery',
+            type: 'file',
+          ),
+        ])
+      ),
+    ]
+  )]
   #[OA\Response(response: 500, description: 'An error occurred while uploading the gallery')]
   public function uploadGallery(
     int $id,
