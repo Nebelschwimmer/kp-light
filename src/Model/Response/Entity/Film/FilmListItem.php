@@ -5,12 +5,12 @@ use OpenApi\Attributes as OA;
 
 class FilmListItem
 {
-  public function __construct(?int $id = null, ?string $name, ?string $directorName, ?string $preview, array $genres, int $releaseYear, ?string $description = null)
+  public function __construct(?int $id = null, ?string $name, ?string $directorName, ?array $gallery, array $genres, int $releaseYear, ?string $description = null)
   {
     $this->id = $id;
     $this->name = $name;
     $this->directorName = $directorName;
-    $this->preview = $preview;
+    $this->gallery = $gallery;
     $this->genres = $genres;
     $this->releaseYear = $releaseYear;
     $this->description = $description;
@@ -23,7 +23,7 @@ class FilmListItem
   #[OA\Property(example: 'James Cameron')]
   public ?string $directorName;
 
-  public ?string $preview;
+  public ?array $gallery = [];
 
   public array $genres = [];
 
@@ -51,16 +51,19 @@ class FilmListItem
 
     return $this;
   }
-  public function getPreview(): string
+
+  public function getGallery(): array
   {
-    return $this->preview;
+    return $this->gallery;
   }
-  public function setPreview(string $preview): static
+
+  public function setGallery(array $gallery): static
   {
-    $this->preview = $preview;
+    $this->gallery = $gallery;
 
     return $this;
   }
+
 
   public function getDirectorName(): string
   {

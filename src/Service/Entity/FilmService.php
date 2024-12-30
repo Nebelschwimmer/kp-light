@@ -38,7 +38,7 @@ class FilmService
         $filmDetail = $this->filmMapper
             ->mapToDetail($this->find($id), new FilmDetail(), $locale);
         $film = $this->find($id);
-        $shortPreviewPath = $this->getPreviewShortPath($id, $film->getPreview());
+        $shortPreviewPath = $this->getPreviewShortPath($id);
         $filmDetail->setPreview($shortPreviewPath);
 
         $galleryPaths = $this->setGalleryPaths($id);
@@ -71,8 +71,8 @@ class FilmService
         );
 
         foreach ($items as $item) {
-            $shortPreviewPath = $this->getPreviewShortPath($item->getId());
-            $item->setPreview($shortPreviewPath);
+          $galleryPaths = $this->setGalleryPaths($item->getId());
+          $item->setGallery($galleryPaths);
         }
 
         return new FilmList($items);
@@ -112,8 +112,9 @@ class FilmService
             $films
         );
         foreach ($items as $item) {
-            $shortPreviewPath = $this->getPreviewShortPath($item->getId());
-            $item->setPreview($shortPreviewPath);
+          $galleryPaths = $this->setGalleryPaths($item->getId());
+            
+            $item->setGallery( $galleryPaths);
         }
 
         return new FilmList($items);
@@ -131,8 +132,8 @@ class FilmService
             $films
         );
         foreach ($items as $item) {
-            $shortPreviewPath = $this->getPreviewShortPath($item->getId());
-            $item->setPreview($shortPreviewPath);
+          $galleryPaths = $this->setGalleryPaths($item->getId());
+          $item->setGallery($galleryPaths);
         }
 
         return new FilmPaginateList($items, $totalPages, $currentPage);

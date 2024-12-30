@@ -15,12 +15,12 @@ use App\Exception\NotFound\PersonNotFoundException;
 use Symfony\Component\HttpFoundation\Response;
 use App\Service\Entity\PersonService;
 use App\Dto\Entity\Query\PersonQueryDto;
-use App\Model\Response\Validation\ValidationErrorList;
+
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use App\Dto\Entity\PersonDto;
 use Symfony\Component\HttpFoundation\Request;
-use App\Service\Validator\Entity\Person\PersonValidator;
-use App\Exception\ValidatorException;
+
+
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use OpenApi\Attributes as OA;
 use OpenApi\Attributes\MediaType;
@@ -150,21 +150,15 @@ class PersonController extends AbstractController
 	#[OA\Response(response: 500, description: 'An error occurred while creating the person')]
 
 	public function create(
-		PersonValidator $validator,
 		#[MapRequestPayload] ?PersonDto $dto,
 	): Response {
 		$data = null;
 		$status = Response::HTTP_OK;
 
 		try {
-			$validator->validate($dto);
 
 			$data = $this->personService->create($dto);
-		} catch (ValidatorException $e) {
-			$this->logger->error($e);
-			$status = Response::HTTP_BAD_REQUEST;
-			$data = $validator->getErrors();
-		} catch (\Throwable $e) {
+		}  catch (\Throwable $e) {
 			$this->logger->error($e);
 			$data = $e->getMessage();
 			$status = Response::HTTP_INTERNAL_SERVER_ERROR;
@@ -194,7 +188,6 @@ class PersonController extends AbstractController
 
 	public function update(
 		int $id,
-		PersonValidator $validator,
 		#[MapRequestPayload] ?PersonDto $dto,
 	): Response {
 
@@ -202,14 +195,9 @@ class PersonController extends AbstractController
 		$status = Response::HTTP_OK;
 
 		try {
-			$validator->validate($dto);
 
 			$data = $this->personService->update($id, $dto);
-		} catch (ValidatorException $e) {
-			$this->logger->error($e);
-			$status = Response::HTTP_BAD_REQUEST;
-			$data = $validator->getErrors();
-		} catch (\Throwable $e) {
+		}  catch (\Throwable $e) {
 			$this->logger->error($e);
 			$data = $e->getMessage();
 			$status = Response::HTTP_INTERNAL_SERVER_ERROR;
