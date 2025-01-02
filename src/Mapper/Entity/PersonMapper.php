@@ -83,32 +83,11 @@ class PersonMapper
     $filmNames = array_map(fn(Film $film) => [
       'id' => $film->getId(),
       'name' => $film->getName(),
-      'roles' => $this->definePersonRolesInFilm($film, $person),
     ], $films);
 
     return $filmNames;
   }
 
-
-
-  private function definePersonRolesInFilm(Film $film, Person $person): array
-  {
-    $actors = $film->getActors()->toArray();
-    $roles = [];
-    foreach ($actors as $actor) {
-      if ($actor->getId() == $person->getId()) {
-        $roles[] = 'actor';
-      }
-    }
-    $director = $film->getDirectedBy() ?? null;
-    if (null !== $director) {
-      if ($director->getId() == $person->getId()) {
-        $roles[] = 'director';
-      }
-    }
-
-    return $roles;
-  }
 
   private function matchSpecialtyIdsToTranslations(array $specialties)
   {

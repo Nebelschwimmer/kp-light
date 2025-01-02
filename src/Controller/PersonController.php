@@ -37,7 +37,7 @@ class PersonController extends AbstractController
 	/**
 	 * Find a person by id
 	 */
-	#[Route(path: '/api/persons/{id}',
+	#[Route(path: '/api/persons/{id}/{locale}',
 		name: 'api_person',
 		methods: ['GET'],
 		requirements: ['id' => '\d+']
@@ -48,13 +48,13 @@ class PersonController extends AbstractController
 		description: 'Successful response',
 		content: new Model(type: PersonDetail::class)
 	)]
-	public function find(int $id): Response
+	public function find(int $id, string $locale): Response
 	{
 		$status = Response::HTTP_OK;
 		$data = null;
 
 		try {
-			$data = $this->personService->get($id);
+			$data = $this->personService->get($id, $locale);
 		} catch (PersonNotFoundException $e) {
 			$status = Response::HTTP_NOT_FOUND;
 			$this->logger->error($e);
