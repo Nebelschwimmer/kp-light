@@ -108,8 +108,7 @@ class FilmService
         );
         foreach ($items as $item) {
           $galleryPaths = $this->setGalleryPaths($item->getId());
-            
-            $item->setGallery( $galleryPaths);
+          $item->setGallery($galleryPaths);
         }
 
         return new FilmList($items);
