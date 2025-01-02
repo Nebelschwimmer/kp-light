@@ -37,9 +37,7 @@ class FilmService
     {
         $filmDetail = $this->filmMapper
             ->mapToDetail($this->find($id), new FilmDetail(), $locale);
-        $film = $this->find($id);
-        $shortPreviewPath = $this->getPreviewShortPath($id);
-        $filmDetail->setPreview($shortPreviewPath);
+
 
         $galleryPaths = $this->setGalleryPaths($id);
         $filmDetail->setGallery($galleryPaths);
@@ -51,9 +49,6 @@ class FilmService
     {
         $film = $this->find($id);
         $form = $this->filmMapper->mapToForm($film, new FilmForm());
-        
-        $shortPreviewPath = $this->getPreviewShortPath($id);
-        $form->setPreview($shortPreviewPath);
 
         $galleryPaths = $this->setGalleryPaths($id);
         $form->setGallery($galleryPaths);
@@ -178,6 +173,13 @@ class FilmService
         }
         $film->setWriter($writer);
 
+        $composerId = $dto->composerId;
+        $composer = $this->personRepository->find($composerId);
+        if (null === $composer) {
+            throw new PersonNotFoundException();
+        }
+        $film->setComposer($composer);
+
         $film
             ->setName($dto->name)
             ->setReleaseYear($dto->releaseYear)
@@ -259,38 +261,25 @@ class FilmService
         $this->repository->remove($film);
     }
 
-    public function uploadPreview(int $id, UploadedFile $preview): FilmForm
-    {
-        $film = $this->find($id);
-        $dirName = $this->specifyFilmPreviewPath($film->getId());
-        $clientFileName = $preview->getClientOriginalName();
-        $this->fileSystemService->upload($preview, $dirName, $clientFileName);
 
-        return $this->findForm($film->getId());
-    }
-
-    public function deletePreview(int $id): FilmForm
-    {
-        $film = $this->find($id);
-        $fileName = $film->getPreview();
-
-        $fullPath = $this->getPreviewFileFullPath($id);
-
-        $this->fileSystemService->removeFile($fullPath);
-
-        $filmForm = $this->findForm(id: $film->getId());
-        $filmForm->setPreview("");
-
-        return $filmForm;
-    }
 
     public function uploadGallery(int $id, array $files): FilmForm
     {
         $film = $this->find($id);
         $dirName = $this->specifyFilmGalleryPath($film->getId());
-        foreach ($files as $index => $file) {
-            $indexedFileName = 'picture' . '-' . $index + 1;
-            $this->fileSystemService->upload($file, $dirName, $indexedFileName);
+        $currentFiles = $this->fileSystemService->searchFiles($dirName, '*');
+        $currentFileIndexes = [];
+        foreach ($currentFiles as $file) {
+            $currentFileIndexes[] = substr($file, strrpos($file, '-') + 1);
+        }
+        $maxIndex = 0;
+        if (count($currentFileIndexes) > 0) {
+            $maxIndex = max($currentFileIndexes);
+        }
+        foreach ($files as $file) {
+          $maxIndex++;
+          $indexedFileName = 'picture' . '-' . $maxIndex + 1;
+          $this->fileSystemService->upload($file, $dirName, $indexedFileName);
         }
 
         return $this->findForm($film->getId());
@@ -336,26 +325,6 @@ class FilmService
         return $shortPaths;
     }
 
-    private function getPreviewShortPath($id): string
-    {
-        $fullpath = $this->getPreviewFileFullPath($id);
-        $shortPath = '';
-        if (file_exists($fullpath)) {
-            $shortPath = $this->fileSystemService->getShortPath($fullpath);
-        }
-
-        return $shortPath;
-    }
-
-    private function specifyFilmPreviewPath(int $id): string
-    {
-        $subDirByIdPath = $this->createUploadsDir($id);
-
-        $previewDirPath = $subDirByIdPath  . 'preview';
-        $this->fileSystemService->createDir($previewDirPath);
-
-        return $previewDirPath;
-    }
 
     private function specifyFilmGalleryPath(int $id): string
     {
@@ -379,14 +348,6 @@ class FilmService
         return $subDirByIdPath;
     }
 
-    private function getPreviewFileFullPath(int $id): ?string
-    {
-        $previewPath = $this->specifyFilmPreviewPath($id);
-        $previewDirFiles = $this->fileSystemService->searchFiles($previewPath);
-        $previewFilePath = $previewDirFiles[0] ?? null;
-
-        return $previewFilePath;
-    }
 
     private function getGalleryItemShortPath(Film $film, int $index): string
     {

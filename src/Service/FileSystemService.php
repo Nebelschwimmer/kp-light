@@ -29,9 +29,9 @@ class FileSystemService
       :
       ($fileName = $safeFilename . '-' . uniqid() . '.' . $file->guessExtension());
     try {
-      if (file_exists($path . DIRECTORY_SEPARATOR . $fileName)) {
-        throw new UniqueFileException();
-      }
+      // if (file_exists($path . DIRECTORY_SEPARATOR . $fileName)) {
+      //   throw new UniqueFileException();
+      // }
       $file->move($path, $fileName);
     } catch (FileException $e) {
       throw new FileNotFoundException();
@@ -79,9 +79,7 @@ class FileSystemService
   {
     if (file_exists($path)) {
       unlink($path);
-    } else {
-      throw new FileNotFoundException();
-    }
+    } 
   }
 
 

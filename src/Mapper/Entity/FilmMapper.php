@@ -86,7 +86,7 @@ class FilmMapper
       $film->getId(),
       $film->getName(),
       $film->getDirectedBy() ? $film->getDirectedBy()->getFullname() : '',
-      $film->getPreview(),
+      $film->getGallery(),
       $film->getGenres(),
       $film->getReleaseYear(),
       $film->getDescription()
