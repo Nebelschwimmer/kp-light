@@ -59,6 +59,8 @@ class FilmDetail
 
   public ?array $gallery = [];
 
+  public ?array $actorPhotos = [];
+
   public function getId(): int
   {
     return $this->id;
@@ -280,6 +282,28 @@ class FilmDetail
   public function setComposerName(?string $composerName): static
   {
     $this->composerName = $composerName;
+
+    return $this;
+  }
+
+  public function getComposerId(): ?int
+  {
+    return $this->composerId;
+  }
+  public function setComposerId(?int $composerId): static
+  {
+    $this->composerId = $composerId;
+
+    return $this;
+  }
+
+  public function getActorPhotos(): array
+  {
+    return $this->actorPhotos;
+  }
+  public function setActorPhotos(?array $actorPhotos): static
+  {
+    $this->actorPhotos = $actorPhotos;
 
     return $this;
   }

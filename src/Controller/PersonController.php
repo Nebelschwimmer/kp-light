@@ -142,11 +142,6 @@ class PersonController extends AbstractController
 		description: 'A new person has been created',
 		content: new Model(type: PersonForm::class)
 	)]
-	#[OA\Response(
-		response: 400,
-		description: 'Validation error',
-		content: new Model(type: ValidationErrorList::class)
-	)]
 	#[OA\Response(response: 500, description: 'An error occurred while creating the person')]
 
 	public function create(
@@ -178,11 +173,6 @@ class PersonController extends AbstractController
 		response: 200,
 		description: 'A person has been updated',
 		content: new Model(type: PersonForm::class)
-	)]
-	#[OA\Response(
-		response: 400,
-		description: 'Validation error',
-		content: new Model(type: ValidationErrorList::class)
 	)]
 	#[OA\Response(response: 500, description: 'An error occurred while updating the person')]
 

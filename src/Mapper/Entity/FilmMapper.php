@@ -56,7 +56,9 @@ class FilmMapper
       ->setWriterName($film->getWriter() ? $film->getWriter()->getFullname() : null)
       ->setWriterId($film->getWriter() ? $film->getWriter()
       ->getId() : null)
+      ->setComposerId($film->getComposer() ? $film->getComposer()->getId() : null)
       ->setComposerName($film->getComposer() ? $film->getComposer()->getFullname() : null)
+      ->setActorPhotos($this->transformActorsToPhotos($film))
     ;
   }
 
@@ -112,6 +114,16 @@ class FilmMapper
     }
 
     return $idsArr;
+  }
+
+  private function transformActorsToPhotos(Film $film): array
+  {
+    $photosArr = [];
+    foreach ($film->getActors() as $actor) {
+      $photosArr[] = $actor->getPhoto();
+    }
+
+    return $photosArr;
   }
 
 }

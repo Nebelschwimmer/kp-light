@@ -266,19 +266,8 @@ class FilmService
     {
         $film = $this->find($id);
         $dirName = $this->specifyFilmGalleryPath($film->getId());
-        $currentFiles = $this->fileSystemService->searchFiles($dirName, '*');
-        $currentFileIndexes = [];
-        foreach ($currentFiles as $file) {
-            $currentFileIndexes[] = substr($file, strrpos($file, '-') + 1);
-        }
-        $maxIndex = 0;
-        if (count($currentFileIndexes) > 0) {
-            $maxIndex = max($currentFileIndexes);
-        }
         foreach ($files as $file) {
-          $maxIndex++;
-          $indexedFileName = 'picture' . '-' . $maxIndex + 1;
-          $this->fileSystemService->upload($file, $dirName, $indexedFileName);
+          $this->fileSystemService->upload($file, $dirName);
         }
 
         return $this->findForm($film->getId());
